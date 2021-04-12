@@ -5,7 +5,7 @@ import commonStyles from '../../styles/common.module.scss';
 export default function Header() {
   return (
     <header className={`${commonStyles.container} ${styles.headerContainer}`}>
-      <div className={styles.headerContent}>
+      <div className={`${commonStyles.content} ${styles.headerContent}`}>
         <Link href="/">
           <a>
             <img src="/images/logo.svg" alt="logo" />
