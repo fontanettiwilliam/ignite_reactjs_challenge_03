@@ -38,7 +38,7 @@ export default function Home({ postsPagination }: HomeProps) {
       <main className={commonStyles.container}>
         <div className={`${commonStyles.content} ${styles.posts}`}>
           {postsPagination.results.map(post => (
-            <Link href={`/posts/${post.uid}`} key={post.uid}>
+            <Link href={`/post/${post.uid}`} key={post.uid}>
               <a>
                 <strong>{post.data.title}</strong>
                 <span>{post.data.subtitle}</span>
