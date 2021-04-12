@@ -6,6 +6,7 @@ import { FiCalendar } from 'react-icons/fi';
 import { FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
+import { useState } from 'react';
 import { getPrismicClient } from '../services/prismic';
 import commonStyles from '../styles/common.module.scss';
 import styles from './home.module.scss';
@@ -30,6 +31,34 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps) {
+  const [posts, setPosts] = useState(postsPagination.results);
+  const [postsNextPage, setPostsNextPage] = useState(postsPagination.next_page);
+
+  async function loadMorePosts(): Promise<void> {
+    const postsResponse = await fetch(
+      postsPagination.next_page
+    ).then(response => response.json());
+
+    const morePosts = postsResponse.results.map((post: Post) => ({
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM Y',
+        {
+          locale: ptBR,
+        }
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    }));
+
+    setPosts([...posts, ...morePosts]);
+    setPostsNextPage(postsResponse.next_page);
+  }
+
   return (
     <>
       <Head>
@@ -37,7 +66,7 @@ export default function Home({ postsPagination }: HomeProps) {
       </Head>
       <main className={commonStyles.container}>
         <div className={`${commonStyles.content} ${styles.posts}`}>
-          {postsPagination.results.map(post => (
+          {posts.map(post => (
             <Link href={`/post/${post.uid}`} key={post.uid}>
               <a>
                 <strong>{post.data.title}</strong>
@@ -51,8 +80,13 @@ export default function Home({ postsPagination }: HomeProps) {
               </a>
             </Link>
           ))}
-          {postsPagination.next_page && (
-            <button type="button" className={styles.loadMore}>
+
+          {postsNextPage && (
+            <button
+              type="button"
+              className={styles.loadMore}
+              onClick={loadMorePosts}
+            >
               Carregar mais posts
             </button>
           )}
