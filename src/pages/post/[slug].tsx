@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { RichText } from 'prismic-dom';
 import { useMemo } from 'react';
 import { FiCalendar, FiClock, FiUser } from 'react-icons/fi';
+import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
@@ -59,13 +60,14 @@ export default function Post({ post }: PostProps) {
       <Head>
         <title>{post?.data?.title} | spacetraveling</title>
       </Head>
-      <header className={commonStyles.content}>
+      <Header />
+      <div className={commonStyles.content}>
         <img
           src={post?.data?.banner.url ?? '/images/carregando.png'}
           alt={post?.data?.author ?? 'Banner'}
           className={styles.banner}
         />
-      </header>
+      </div>
       <main className={commonStyles.container}>
         <article className={`${commonStyles.content} ${styles.post}`}>
           <strong>
@@ -74,7 +76,13 @@ export default function Post({ post }: PostProps) {
 
           <div className={styles.info}>
             <FiCalendar />
-            <time>{post?.first_publication_date || 'Publication date'}</time>
+            <time>
+              {post?.first_publication_date
+                ? format(new Date(post.first_publication_date), 'dd MMM Y', {
+                    locale: ptBR,
+                  })
+                : 'Publication Date'}
+            </time>
             <FiUser />
             <span>{post?.data?.author || 'Author'}</span>
             <FiClock />
@@ -120,19 +128,26 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { slug } = params;
+
   const prismic = getPrismicClient();
+
   const response = await prismic.getByUID('post', String(slug), {});
 
+  if (!response) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const post = {
-    first_publication_date: format(
-      new Date(response.first_publication_date),
-      'dd MMM Y',
-      {
-        locale: ptBR,
-      }
-    ),
+    uid: response.uid,
+    first_publication_date: response.first_publication_date,
     data: {
       title: response.data.title,
+      subtitle: response.data.subtitle,
       banner: { url: response.data.banner.url },
       author: response.data.author,
       content: response.data.content,

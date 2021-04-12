@@ -1,3 +1,13 @@
+.imgContainer {
+  height: 5rem;
+}
+
+.imgContent {
+  height: 5rem;
+  display: flex;
+  align-items: center;
+}
+
 .posts {
   // max-width: 720px;
   margin: 5rem auto 0;

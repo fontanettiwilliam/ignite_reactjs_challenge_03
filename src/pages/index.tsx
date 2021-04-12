@@ -41,13 +41,7 @@ export default function Home({ postsPagination }: HomeProps) {
 
     const morePosts = postsResponse.results.map((post: Post) => ({
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM Y',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
@@ -64,6 +58,13 @@ export default function Home({ postsPagination }: HomeProps) {
       <Head>
         <title>Home | spacetraveling</title>
       </Head>
+
+      <div className={`${commonStyles.container} ${styles.imgContainer}`}>
+        <div className={`${commonStyles.content} ${styles.imgContent}`}>
+          <img src="/logo.svg" alt="logo" />
+        </div>
+      </div>
+
       <main className={commonStyles.container}>
         <div className={`${commonStyles.content} ${styles.posts}`}>
           {posts.map(post => (
@@ -73,7 +74,17 @@ export default function Home({ postsPagination }: HomeProps) {
                 <span>{post.data.subtitle}</span>
                 <div className={styles.info}>
                   <FiCalendar />
-                  <time>{post.first_publication_date}</time>
+                  <time>
+                    {post?.first_publication_date
+                      ? format(
+                          new Date(post.first_publication_date),
+                          'dd MMM Y',
+                          {
+                            locale: ptBR,
+                          }
+                        )
+                      : 'Publication Date'}
+                  </time>
                   <FiUser />
                   <span>{post.data.author}</span>
                 </div>
@@ -101,7 +112,14 @@ export const getStaticProps: GetStaticProps = async () => {
   const postsResponse = await prismic.query(
     [Prismic.predicates.at('document.type', 'post')],
     {
-      fetch: ['post.title', 'post.subtitle', 'post.author'],
+      fetch: [
+        'post.uid',
+        'post.title',
+        'post.subtitle',
+        'post.author',
+        'post.first_publication_date',
+      ],
+      orderings: '[document.first_publication_date desc]',
       pageSize: 2,
     }
   );
@@ -109,13 +127,7 @@ export const getStaticProps: GetStaticProps = async () => {
   const posts = postsResponse.results.map(post => {
     return {
       uid: post.uid,
-      first_publication_date: format(
-        new Date(post.first_publication_date),
-        'dd MMM Y',
-        {
-          locale: ptBR,
-        }
-      ),
+      first_publication_date: post.first_publication_date,
       data: {
         title: post.data.title,
         subtitle: post.data.subtitle,
